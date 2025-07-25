@@ -5,16 +5,11 @@
 
 
 //Uncomment and set up if you want to use custom pins for the SPI communication
-
-int sck = 40;
-int miso = 39;
-int mosi = 38;
-int cs = 45;
-
-// int sck =39;
-// int miso = 40;
-// int mosi = 38;
-// int cs = 45;
+ #define REASSIGN_PINS
+ int sck = 40;
+ int miso = 39;
+ int mosi = 38;
+ int cs = 45;
 
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels) {
@@ -175,34 +170,23 @@ void testFileIO(fs::FS &fs, const char *path) {
 
 void setup() {
   Serial.begin(115200);
-  pinMode(48, OUTPUT);
-  digitalWrite(48,HIGH);
+  Serial.println("Starting");
   delay(1000);
+  pinMode(48, OUTPUT);
+  digitalWrite(48,1);
+  delay(1000);
+  Serial.println("SD ON");
+  delay(2000);
 
+#ifdef REASSIGN_PINS
   SPI.begin(sck, miso, mosi, cs);
-
-  if (!SD.begin(cs, SPI, 1000000U)) {
+  if (!SD.begin(cs)) {
+#else
+  if (!SD.begin()) {
+#endif
     Serial.println("Card Mount Failed");
-  return;
+    return;
   }
-//   #if USE_HSPI
-//   // Khởi tạo HSPI
-//   SPIClass SD_SPI(HSPI);
-//   SD_SPI.begin(sck, miso, mosi, cs);
-//   if (!SD.begin(cs, SD_SPI)) {
-//     Serial.println("Card Mount Failed on HSPI");
-//     return;
-//   }
-// #else
-//   // Khởi tạo VSPI (mặc định)
-//   SPI.begin(sck, miso, mosi, cs);
-//   // Thử mount ở 1MHz nếu 4MHz hoặc 8MHz lỗi
-//   if (!SD.begin(cs, SPI, 4000000U)) {
-//     Serial.println("Card Mount Failed on VSPI");
-//     return;
-//   }
-// #endif
-
   uint8_t cardType = SD.cardType();
 
   if (cardType == CARD_NONE) {
